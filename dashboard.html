@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QueueLive — Dashboard</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #b4daec;
+}
+
+header {
+    background: #1ca6cd;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.container {
+    max-width: 620px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+.card {
+    background: rgba(239, 245, 248, 0.92);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.status { font-size: 18px; font-weight: bold; }
+.green  { color: green;  }
+.orange { color: orange; }
+.red    { color: red;    }
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border: none;
+    border-radius: 6px;
+    background: #1565c0;
+    color: white;
+    cursor: pointer;
+}
+button:hover { background: #0d5ca1; }
+.modeToggle  { background: #339dc4; }
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.mainTimer {
+    font-size: 48px;
+    text-align: center;
+    color: #1565c0;
+    margin: 10px 0 20px;
+    font-weight: bold;
+}
+
+.hidden { display: none; }
+
+#modeLabel { margin: 4px 0 0; text-align: center; color: #555; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>QueueLive</h1>
+    <p>City Hospital — Real-Time Queue Dashboard</p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <label>Select Doctor:</label>
+        <select id="doctorSelect" onchange="changeDoctor()"></select>
+
+        <div class="mainTimer" id="waitTime">--:--:--</div>
+
+        <h3>Live Info</h3>
+        <p id="peopleCount"></p>
+        <p id="timePerPerson"></p>
+        <p id="crowdStatus" class="status"></p>
+    </div>
+
+    <!-- Admin panel (hidden by default) -->
+    <div class="card hidden" id="adminPanel">
+        <h2>Developer Mode — Update Queue</h2>
+
+        <label>Number of People in Queue:</label>
+        <input type="number" id="inputPeople" min="0">
+
+        <label>Average Time Per Patient (minutes):</label>
+        <input type="number" id="inputTime" min="1">
+
+        <button onclick="updateQueue()">Update Queue</button>
+    </div>
+
+    <div class="card">
+        <button class="modeToggle" onclick="toggleMode()">Switch Mode</button>
+        <p id="modeLabel">Current Mode: User</p>
+    </div>
+
+    <div class="card" style="text-align:center;">
+        <a href="index.html" style="color:#1565c0;">← Back to Hospital Homepage</a>
+    </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+
+let selectedDoctorId = doctors[0]?.id ?? 1;
+let isAdmin          = false;
+let totalSeconds     = 0;
+let timerInterval    = null;
+
+// ── Populate doctor dropdown ────────────────────────────────────
+function loadDoctors() {
+    const select = document.getElementById("doctorSelect");
+    select.innerHTML = "";
+    doctors.forEach(doc => {
+        const opt = document.createElement("option");
+        opt.value = doc.id;
+        opt.text  = doc.name + " (" + doc.department + ")";
+        select.appendChild(opt);
+    });
+    select.value = selectedDoctorId;
+}
+
+function changeDoctor() {
+    selectedDoctorId = parseInt(document.getElementById("doctorSelect").value);
+    displayData();
+}
+
+// ── Display & timer ─────────────────────────────────────────────
+function displayData() {
+    const doctor = doctors.find(d => d.id === selectedDoctorId);
+
+    // FIX: dashboard timer = same formula as user side (queue × avgTime)
+    totalSeconds = doctor.patientsToday * doctor.avgTime * 60;
+
+    document.getElementById("peopleCount").innerHTML  =
+        "People in Queue: <strong>" + doctor.patientsToday + "</strong>";
+
+    document.getElementById("timePerPerson").innerHTML =
+        "Average Time Per Patient: <strong>" + doctor.avgTime + " min</strong>";
+
+    updateTimerDisplay();
+    startTimer();
+}
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+        if (totalSeconds > 0) {
+            totalSeconds--;
+            updateTimerDisplay();
+        } else {
+            clearInterval(timerInterval);
+            document.getElementById("waitTime").innerText = "00:00:00";
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+
+    document.getElementById("waitTime").innerText =
+        h.toString().padStart(2,"0") + ":" +
+        m.toString().padStart(2,"0") + ":" +
+        s.toString().padStart(2,"0");
+
+    updateCrowdStatus();
+}
+
+function updateCrowdStatus() {
+    const el = document.getElementById("crowdStatus");
+    if (totalSeconds <= 1200) {
+        el.innerHTML = "Status: Low Crowd";
+        el.className = "status green";
+    } else if (totalSeconds <= 3600) {
+        el.innerHTML = "Status: Moderate Crowd";
+        el.className = "status orange";
+    } else {
+        el.innerHTML = "Status: High Crowd";
+        el.className = "status red";
+    }
+}
+
+// ── Admin: update queue ─────────────────────────────────────────
+function updateQueue() {
+    const newPeople = document.getElementById("inputPeople").value;
+    const newTime   = document.getElementById("inputTime").value;
+
+    if (newPeople === "" || newTime === "") {
+        alert("Please enter valid values.");
+        return;
+    }
+
+    const doctor = doctors.find(d => d.id === selectedDoctorId);
+
+    const oldCount      = doctor.patientsToday;
+    const newCount      = parseInt(newPeople);
+    const tokenDelta    = Math.max(0, newCount - oldCount);
+
+    doctor.patientsToday = newCount;
+    doctor.avgTime       = parseInt(newTime);
+
+    // Keep lastToken in sync: if queue grew, tokens were issued
+    doctor.lastToken = (doctor.lastToken ?? oldCount) + tokenDelta;
+
+    saveDoctors();   // FIX: uses shared saveDoctors() from data.js
+    displayData();
+    alert("Queue updated successfully!");
+}
+
+// ── Mode toggle ─────────────────────────────────────────────────
+function toggleMode() {
+    isAdmin = !isAdmin;
+
+    const adminPanel = document.getElementById("adminPanel");
+    const label      = document.getElementById("modeLabel");
+    const doctor     = doctors.find(d => d.id === selectedDoctorId);
+
+    if (isAdmin) {
+        adminPanel.classList.remove("hidden");
+        label.innerText = "Current Mode: Developer";
+        document.getElementById("inputPeople").value = doctor.patientsToday;
+        document.getElementById("inputTime").value   = doctor.avgTime;
+    } else {
+        adminPanel.classList.add("hidden");
+        label.innerText = "Current Mode: User";
+    }
+}
+
+// ── Init ────────────────────────────────────────────────────────
+loadDoctors();
+displayData();
+
+</script>
+</body>
+</html>
