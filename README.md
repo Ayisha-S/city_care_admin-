@@ -3,7 +3,7 @@
 ### Team Members
 
 * Member 1: Ayisha S – [GEC PALAKKAD]
-* Member 2: [Ananya Prakash] – [GEC PALAKKAD]
+* Member 2: Ananya Prakash – [GEC PALAKKAD]
 
 ### Hosted Project Link
 [(https://ayisha-s.github.io/city_care_admin-/index.html)]
@@ -22,22 +22,20 @@ Our system manages patient queues digitally, calculates waiting time dynamically
 
 ---
 
-## Technical Details
+### Technical Details
 
-### Technologies/Components Used
+Technologies/Components Used
 
-**For Software:**
+For Software:
+Languages used: HTML, CSS, JavaScript
+Frameworks used: None (Vanilla Web Development)
+Libraries used: Browser Audio API
+Tools used: VS Code, GitHub, Web Browser
 
-* Languages used: HTML, CSS, JavaScript
-* Frameworks used: None (Vanilla Web Development)
-* Libraries used: Browser Audio API
-* Tools used: VS Code, GitHub, Web Browser
-
-**For Hardware:**
-
-* Main components: Computer/Laptop
-* Specifications: Any modern browser supporting JavaScript
-* Tools required: Internet Browser
+For Hardware:
+Main components: Computer/Laptop
+Specifications: Any modern browser supporting JavaScript
+Tools required: Internet Browser
 
 ---
 
@@ -56,14 +54,14 @@ Our system manages patient queues digitally, calculates waiting time dynamically
 
 ### For Software:
 
-#### Installation
+Installation
 
 ```bash
 git clone https://github.com/yourusername/projectname.git
 cd projectname
 ```
 
-#### Run
+Run
 
 ```bash
 Open index.html in browser
@@ -85,7 +83,7 @@ Open index.html in browser
 
 ### Video
 
-[Add YouTube / Drive Demo Link]
+[(https://drive.google.com/file/d/1Gpm-Brbfd0duPPk08sSCUeQJg2oIqoTF/view?usp=drive_link)]
 
 **Video demonstrates:**
 
@@ -96,12 +94,11 @@ Open index.html in browser
 
 ### Additional Demos
 
-* Live Demo: [Link]
-* GitHub Repository: [Link]
+* GitHub Repository: [(https://github.com/Ayisha-S/city_care_admin-)]
 
 ---
 
-## AI Tools Used (Optional - For Transparency Bonus)
+## AI Tools Used 
 
 **Tool Used:** ChatGPT
 
@@ -116,7 +113,6 @@ Open index.html in browser
 
 * "Play audio when timer ends in JavaScript"
 * "Fix countdown timer logic"
-* "Generate README format for project"
 
 **Percentage of AI-generated code:** ~25–30%
 
